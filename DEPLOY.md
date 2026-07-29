@@ -14,11 +14,15 @@ git commit -m "Initial commit: AI Quest learning dashboard"
 gh repo create ai-quest --public --source=. --push
 ```
 
-### Enable Pages in GitHub
+### Enable Pages in GitHub (required)
 
-1. Repo → **Settings** → **Pages**
-2. Source: **GitHub Actions**
-3. Push to `main` — workflow deploys automatically
+If deploy fails with **Get Pages site failed**, do this first:
+
+1. Open **https://github.com/vinayyellaram/ai-quest/settings/pages**
+2. **Build and deployment** → **Source** → **GitHub Actions**
+3. Go to **Actions** → re-run **Deploy AI Quest to GitHub Pages**
+
+Wait ~1 min, then open **https://vinayyellaram.github.io/ai-quest/**
 
 ### Update live site
 
