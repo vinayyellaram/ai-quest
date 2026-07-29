@@ -91,6 +91,68 @@ function loadState() {
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   updateHUD();
+  updateSyncStatus();
+}
+
+function getExportPayload() {
+  return {
+    app: 'ai-quest',
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    state,
+  };
+}
+
+function exportProgress() {
+  const payload = getExportPayload();
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const name = `ai-quest-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  state.lastExportAt = payload.exportedAt;
+  saveState();
+  showToast('Backup downloaded — save to Drive or iCloud');
+}
+
+function importProgress(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const imported = data.state || data;
+      if (!imported.completedTasks && !imported.role) {
+        throw new Error('Invalid backup file');
+      }
+      state = { ...loadState(), ...imported };
+      saveState();
+      applyRoleUI();
+      renderQuestMap();
+      renderToday();
+      renderSkills();
+      renderQuiz();
+      updateHUD();
+      showToast('Progress restored!');
+    } catch (err) {
+      showToast('Import failed — check the JSON file');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function updateSyncStatus() {
+  const el = document.getElementById('syncStatus');
+  if (!el) return;
+  const done = Object.keys(state.completedTasks || {}).filter(k => state.completedTasks[k]).length;
+  const xp = getTotalXP();
+  if (state.lastExportAt) {
+    el.textContent = `Last backup: ${new Date(state.lastExportAt).toLocaleString()} · ${done} steps done · ${xp} XP`;
+  } else {
+    el.textContent = `${done} steps done · ${xp} XP — export after each session to keep a backup`;
+  }
 }
 
 function getPhases() {
@@ -628,7 +690,7 @@ document.getElementById('rollQuote').addEventListener('click', () => {
 });
 
 document.getElementById('resetBtn').addEventListener('click', () => {
-  if (confirm('Reset all quest progress? This cannot be undone.')) {
+  if (confirm('Reset all quest progress? Export a backup first if you want to keep it.')) {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem('ai-quest-progress-v1');
     state = loadState();
@@ -640,6 +702,16 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     updateHUD();
     showToast('Quest reset.');
   }
+});
+
+document.getElementById('exportBtn').addEventListener('click', exportProgress);
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const file = e.target.files?.[0];
+  if (file) importProgress(file);
+  e.target.value = '';
 });
 
 document.getElementById('pomoStart').addEventListener('click', () => startPomodoro(25 * 60, 'focus'));
@@ -669,4 +741,5 @@ loadNotionContent().then(() => {
   renderSkills();
   renderQuiz();
   updateHUD();
+  updateSyncStatus();
 });
