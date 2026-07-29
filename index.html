@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Quest — Your Job-Ready Learning Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --surface: #12182a;
+      --surface2: #1a2238;
+      --border: #2a3555;
+      --text: #e8ecf4;
+      --muted: #8b9bb8;
+      --accent: #00f5d4;
+      --accent2: #7b61ff;
+      --accent3: #ff6bcb;
+      --gold: #ffd166;
+      --success: #06d6a0;
+      --phase1: #00f5d4;
+      --phase2: #7b61ff;
+      --phase3: #ff6bcb;
+      --phase4: #ffd166;
+      --glow: 0 0 30px rgba(0, 245, 212, 0.25);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 245, 212, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 245, 212, 0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-orbs {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.35;
+      animation: float 12s ease-in-out infinite;
+    }
+
+    .orb-1 { width: 400px; height: 400px; background: var(--accent2); top: -100px; left: -100px; }
+    .orb-2 { width: 350px; height: 350px; background: var(--accent3); bottom: 10%; right: -80px; animation-delay: -4s; }
+    .orb-3 { width: 300px; height: 300px; background: var(--accent); top: 40%; left: 30%; animation-delay: -8s; opacity: 0.2; }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, -20px) scale(1.05); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    /* Header / HUD */
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 1.5rem;
+      box-shadow: var(--glow);
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(0, 245, 212, 0.3); }
+      50% { box-shadow: 0 0 40px rgba(123, 97, 255, 0.4); }
+    }
+
+    .logo h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .logo p { font-size: 0.8rem; color: var(--muted); }
+
+    .hud {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .hud-stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.6rem 1rem;
+      min-width: 100px;
+    }
+
+    .hud-stat label {
+      display: block;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .hud-stat span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .xp-bar-wrap {
+      flex: 1;
+      min-width: 180px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.6rem 1rem;
+    }
+
+    .xp-bar-wrap label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .xp-bar {
+      height: 8px;
+      background: var(--surface2);
+      border-radius: 99px;
+      margin-top: 0.4rem;
+      overflow: hidden;
+    }
+
+    .xp-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      border-radius: 99px;
+      transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 2rem 0 2.5rem;
+    }
+
+    .hero h2 {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero h2 em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--gold), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0 auto 1.5rem;
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .tag:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* Role picker */
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .role-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .role-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .role-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent 60%, rgba(0, 245, 212, 0.05));
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .role-card:hover {
+      border-color: var(--accent2);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .role-card.selected {
+      border-color: var(--accent);
+      box-shadow: var(--glow);
+    }
+
+    .role-card.selected::after {
+      content: '✓ YOUR PATH';
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      background: rgba(0, 245, 212, 0.15);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+    }
+
+    .role-emoji { font-size: 2rem; margin-bottom: 0.5rem; }
+    .role-card h3 { font-size: 1rem; margin-bottom: 0.35rem; }
+    .role-card p { font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
+
+    .role-path-banner {
+      background: linear-gradient(135deg, rgba(0, 245, 212, 0.08), rgba(123, 97, 255, 0.08));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      animation: fadeIn 0.35s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .role-path-banner .path-emoji { font-size: 1.75rem; }
+    .role-path-banner strong { color: var(--accent); }
+    .role-path-banner p { font-size: 0.9rem; color: var(--muted); line-height: 1.45; }
+
+    .phase-focus {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .phase-focus.core { background: rgba(0, 245, 212, 0.15); color: var(--accent); }
+    .phase-focus.bonus { background: rgba(255, 209, 102, 0.15); color: var(--gold); }
+    .phase-focus.light { background: rgba(139, 155, 184, 0.15); color: var(--muted); }
+
+    .quest-map-wrap.updating { opacity: 0.5; pointer-events: none; transition: opacity 0.2s; }
+    .quest-map {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .phase-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+
+    .phase-card.unlocked { border-color: var(--border); }
+    .phase-card.active { border-color: var(--phase-color, var(--accent)); }
+    .phase-card.completed { border-color: var(--success); opacity: 0.95; }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.25rem 1.5rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .phase-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      background: var(--surface2);
+      border: 2px solid var(--phase-color, var(--border));
+      transition: transform 0.3s;
+    }
+
+    .phase-card.open .phase-badge { transform: rotate(10deg) scale(1.05); }
+
+    .phase-info { flex: 1; min-width: 0; }
+    .phase-info h3 { font-size: 1.1rem; margin-bottom: 0.2rem; }
+    .phase-info .meta { font-size: 0.8rem; color: var(--muted); }
+
+    .phase-progress-ring {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .phase-progress-ring circle {
+      fill: none;
+      stroke-width: 4;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+
+    .phase-progress-ring .bg { stroke: var(--surface2); }
+    .phase-progress-ring .fg {
+      stroke: var(--phase-color, var(--accent));
+      stroke-linecap: round;
+      stroke-dasharray: 113;
+      stroke-dashoffset: 113;
+      transition: stroke-dashoffset 0.6s ease;
+    }
+
+    .chevron {
+      font-size: 1.2rem;
+      color: var(--muted);
+      transition: transform 0.3s;
+    }
+
+    .phase-card.open .chevron { transform: rotate(180deg); }
+
+    .phase-body {
+      max-height: 0;
+      overflow: hidden;
+      pointer-events: none;
+      transition: max-height 0.4s ease;
+    }
+
+    .phase-card.open .phase-body {
+      max-height: 800px;
+      pointer-events: auto;
+    }
+
+    .phase-card.open {
+      position: relative;
+      z-index: 2;
+    }
+
+    .phase-content {
+      padding: 0 1.5rem 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .task-list { list-style: none; margin-top: 1rem; }
+
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid rgba(42, 53, 85, 0.5);
+      transition: background 0.2s;
+    }
+
+    .task-item:last-child { border-bottom: none; }
+
+    .task-item.done .task-text {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .task-check {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+      margin-top: 1px;
+    }
+
+    .task-item.done .task-check {
+      background: var(--success);
+      border-color: var(--success);
+      color: #0a0e17;
+    }
+
+    .task-check:hover { border-color: var(--accent); }
+
+    .task-text { font-size: 0.9rem; line-height: 1.45; flex: 1; }
+    .task-xp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--gold);
+      white-space: nowrap;
+    }
+
+    /* Mini quiz */
+    .quiz-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .quiz-question {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .quiz-options {
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .quiz-opt {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+
+    .quiz-opt:hover:not(:disabled) {
+      border-color: var(--accent2);
+      transform: translateX(4px);
+    }
+
+    .quiz-opt.correct { border-color: var(--success); background: rgba(6, 214, 160, 0.1); }
+    .quiz-opt.wrong { border-color: #ef476f; background: rgba(239, 71, 111, 0.1); }
+    .quiz-opt:disabled { cursor: default; }
+
+    .quiz-feedback {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .quiz-feedback.show { display: block; }
+    .quiz-feedback.ok { background: rgba(6, 214, 160, 0.15); color: var(--success); }
+    .quiz-feedback.no { background: rgba(239, 71, 111, 0.15); color: #ef476f; }
+
+    .quiz-next {
+      margin-top: 1rem;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      border: none;
+      color: #0a0e17;
+      font-family: inherit;
+      font-weight: 600;
+      padding: 0.7rem 1.5rem;
+      border-radius: 10px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .quiz-next.show { display: inline-block; }
+    .quiz-next:hover { filter: brightness(1.1); }
+
+    /* Skill wheel */
+    .skills-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    @media (max-width: 700px) {
+      .skills-section { grid-template-columns: 1fr; }
+    }
+
+    .skill-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.5rem;
+    }
+
+    .skill-row {
+      margin-bottom: 1rem;
+    }
+
+    .skill-row:last-child { margin-bottom: 0; }
+
+    .skill-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .skill-label span:last-child {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+    }
+
+    .skill-track {
+      height: 10px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .skill-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.5s ease;
+    }
+
+    .motivation {
+      text-align: center;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, rgba(123, 97, 255, 0.15), rgba(0, 245, 212, 0.1));
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      margin-bottom: 2rem;
+    }
+
+    .motivation q {
+      font-size: 1.15rem;
+      font-style: italic;
+      color: var(--text);
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .motivation cite { font-size: 0.8rem; color: var(--muted); font-style: normal; }
+
+    .btn-roll {
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.8rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 0.75rem;
+      transition: all 0.2s;
+    }
+
+    .btn-roll:hover { border-color: var(--accent3); color: var(--accent3); }
+
+    /* Confetti canvas */
+    #confetti {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 0.85rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 500;
+      box-shadow: var(--glow);
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    .reset-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.75rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-left: 0.5rem;
+    }
+
+    .reset-btn:hover { color: #ef476f; border-color: #ef476f; }
+
+    /* Today + Pomodoro */
+    .learn-lab {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 750px) { .learn-lab { grid-template-columns: 1fr; } }
+
+    .lab-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .today-list { list-style: none; margin-top: 0.75rem; }
+
+    .today-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(42, 53, 85, 0.4);
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .today-item:last-child { border-bottom: none; }
+    .today-item:hover { color: var(--accent); }
+    .today-item .mini-check {
+      width: 18px; height: 18px; border: 2px solid var(--border);
+      border-radius: 5px; flex-shrink: 0; margin-top: 1px;
+      display: grid; place-items: center; font-size: 0.65rem;
+    }
+    .today-item.done { color: var(--muted); text-decoration: line-through; }
+    .today-item.done .mini-check { background: var(--success); border-color: var(--success); color: #0a0e17; }
+
+    .pomodoro-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.5rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--accent);
+      margin: 0.5rem 0;
+    }
+
+    .pomodoro-btns { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+
+    .pomo-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.8rem;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pomo-btn:hover { border-color: var(--accent); }
+    .pomo-btn.primary { background: linear-gradient(135deg, var(--accent2), var(--accent)); color: #0a0e17; font-weight: 600; border: none; }
+    .pomo-btn.running { animation: pulse-glow 2s infinite; }
+
+    .science-tip {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+      line-height: 1.4;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .hud-stat.streak span { color: var(--gold); }
+
+    /* Nested quests */
+    .quest-group {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+      background: var(--surface2);
+    }
+
+    .quest-group:last-child { margin-bottom: 0; }
+
+    .quest-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .quest-header:hover { background: rgba(255,255,255,0.02); }
+
+    .quest-meta { flex: 1; min-width: 0; }
+    .quest-meta h4 { font-size: 0.9rem; margin-bottom: 0.15rem; }
+    .quest-meta .sub { font-size: 0.72rem; color: var(--muted); }
+
+    .method-badge {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      background: rgba(123, 97, 255, 0.15);
+      color: var(--accent2);
+      white-space: nowrap;
+    }
+
+    .quest-progress {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .quest-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; pointer-events: none; }
+    .quest-group.open .quest-body { max-height: 600px; pointer-events: auto; }
+    .quest-group.open .quest-chevron { transform: rotate(180deg); }
+    .quest-chevron { font-size: 0.8rem; color: var(--muted); transition: transform 0.3s; }
+
+    .step-list { list-style: none; padding: 0 1rem 0.75rem; border-top: 1px solid var(--border); }
+    .step-item {
+      display: flex; align-items: flex-start; gap: 0.6rem;
+      padding: 0.5rem 0; font-size: 0.82rem; cursor: pointer;
+      border-bottom: 1px solid rgba(42, 53, 85, 0.3);
+    }
+    .step-item:last-child { border-bottom: none; }
+    .step-item.done .step-text { text-decoration: line-through; color: var(--muted); }
+    .step-item.done .step-text code { color: var(--muted); }
+    .step-check {
+      width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 5px;
+      flex-shrink: 0; display: grid; place-items: center; font-size: 0.65rem; margin-top: 2px;
+    }
+    .step-item.done .step-check { background: var(--success); border-color: var(--success); color: #0a0e17; }
+    .step-text { flex: 1; line-height: 1.4; }
+    .step-text code { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent); background: rgba(0,0,0,0.3); padding: 0.1rem 0.35rem; border-radius: 4px; }
+    .step-xp { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--gold); }
+
+    .phase-body { max-height: 0; overflow: hidden; pointer-events: none; transition: max-height 0.4s ease; }
+    .phase-card.open .phase-body { max-height: 5000px; pointer-events: auto; }
+
+    /* Learn panel */
+    .step-learn-btn {
+      background: rgba(123, 97, 255, 0.15);
+      border: 1px solid var(--accent2);
+      color: var(--accent2);
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      transition: all 0.2s;
+    }
+    .step-learn-btn:hover { background: var(--accent2); color: #fff; transform: scale(1.08); }
+    .step-learn-btn.has-content { border-color: var(--accent); color: var(--accent); background: rgba(0, 245, 212, 0.1); }
+
+    .learn-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .learn-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .learn-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(420px, 100vw);
+      height: 100vh;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      z-index: 2001;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -20px 0 60px rgba(0, 0, 0, 0.4);
+    }
+    .learn-overlay.open .learn-panel { transform: translateX(0); }
+
+    .learn-panel-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .learn-panel-header h3 { font-size: 1.1rem; line-height: 1.3; }
+    .learn-panel-header .step-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+    .learn-close {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+    .learn-close:hover { color: var(--text); border-color: var(--accent); }
+
+    .learn-panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .learn-block {
+      margin-bottom: 1.25rem;
+    }
+    .learn-block h4 {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .learn-block p, .learn-block div {
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: var(--text);
+    }
+    .learn-block code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--accent);
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+    }
+    .learn-links { list-style: none; }
+    .learn-links a {
+      color: var(--accent2);
+      font-size: 0.85rem;
+      text-decoration: none;
+      display: block;
+      padding: 0.35rem 0;
+    }
+    .learn-links a:hover { text-decoration: underline; }
+
+    .learn-notes textarea {
+      width: 100%;
+      min-height: 100px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+      padding: 0.75rem;
+      resize: vertical;
+      line-height: 1.45;
+    }
+    .learn-notes textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .learn-notes-hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.35rem; }
+
+    .quest-about-btn {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      background: rgba(0, 245, 212, 0.1);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+    .quest-about-btn:hover { background: rgba(0, 245, 212, 0.2); }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+  <canvas id="confetti"></canvas>
+
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon">🧠</div>
+        <div>
+          <h1>AI Quest</h1>
+          <p>Full-Stack → AI Engineer</p>
+        </div>
+      </div>
+      <div class="hud">
+        <div class="hud-stat">
+          <label>Level</label>
+          <span id="level">1</span>
+        </div>
+        <div class="hud-stat">
+          <label>XP</label>
+          <span id="xp">0</span>
+        </div>
+        <div class="hud-stat streak">
+          <label>Streak</label>
+          <span id="streak">0🔥</span>
+        </div>
+        <div class="xp-bar-wrap">
+          <label>Progress to next level</label>
+          <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h2>Level up from <em>React</em> to <em>RAG</em></h2>
+      <p>You're a full-stack warrior. This 6-month quest turns your JS superpowers into AI job offers. Check tasks, earn XP, unlock phases.</p>
+      <div class="hero-tags">
+        <span class="tag">Node.js ✓</span>
+        <span class="tag">React ✓</span>
+        <span class="tag">MySQL ✓</span>
+        <span class="tag">Python →</span>
+        <span class="tag">LLMs →</span>
+        <span class="tag">RAG →</span>
+      </div>
+    </section>
+
+    <section class="motivation">
+      <q id="quote">The best way to predict the future is to build it.</q>
+      <cite>— Tap for daily motivation</cite>
+      <br />
+      <button class="btn-roll" id="rollQuote">🎲 Roll new quote</button>
+    </section>
+
+    <h2 class="section-title">🎯 Choose your class</h2>
+    <div class="role-cards" id="roleCards">
+      <div class="role-card selected" data-role="ai-app">
+        <div class="role-emoji">🚀</div>
+        <h3>AI App Engineer</h3>
+        <p>Build LLM features, RAG, agents. Best fit for your stack.</p>
+      </div>
+      <div class="role-card" data-role="ml-eng">
+        <div class="role-emoji">⚙️</div>
+        <h3>ML Engineer</h3>
+        <p>Train models, pipelines, MLOps. More math, strong long-term.</p>
+      </div>
+      <div class="role-card" data-role="fullstack-ai">
+        <div class="role-emoji">🛠️</div>
+        <h3>Full-Stack + AI</h3>
+        <p>Add AI to web apps. Easiest transition, huge demand.</p>
+      </div>
+    </div>
+
+    <div class="learn-lab">
+      <div class="lab-panel">
+        <h2 class="section-title">☀️ Today's focus (3 micro-steps)</h2>
+        <p style="font-size:0.8rem;color:var(--muted);margin-top:-0.5rem">Implementation intentions — science-backed daily targets</p>
+        <ul class="today-list" id="todayList"></ul>
+      </div>
+      <div class="lab-panel">
+        <h2 class="section-title">🍅 Focus timer</h2>
+        <p style="font-size:0.8rem;color:var(--muted);margin-top:-0.5rem">Pomodoro: 25 min deep work, 5 min break</p>
+        <div class="pomodoro-display" id="pomoTime">25:00</div>
+        <div class="pomodoro-btns">
+          <button class="pomo-btn primary" id="pomoStart">Start 25 min</button>
+          <button class="pomo-btn" id="pomoBreak">Break 5 min</button>
+          <button class="pomo-btn" id="pomoReset">Reset</button>
+        </div>
+        <p class="science-tip" id="scienceTip">💡 <strong>Micro-learning:</strong> 2–10 min steps beat vague goals. Small wins release dopamine and build momentum.</p>
+      </div>
+    </div>
+
+    <h2 class="section-title" id="questMapTitle">🗺️ Quest map — 4 phases</h2>
+    <div id="rolePathBanner" class="role-path-banner"></div>
+    <div class="quest-map-wrap" id="questMapWrap">
+      <div class="quest-map" id="questMap"></div>
+    </div>
+
+    <div class="skills-section">
+      <div class="skill-panel">
+        <h2 class="section-title">📊 Skill radar (click to set)</h2>
+        <div id="skillBars"></div>
+      </div>
+      <div class="quiz-box">
+        <h2 class="section-title">⚡ Quick quiz — +25 XP each</h2>
+        <p class="quiz-question" id="quizQ"></p>
+        <div class="quiz-options" id="quizOpts"></div>
+        <div class="quiz-feedback" id="quizFb"></div>
+        <button class="quiz-next" id="quizNext">Next question →</button>
+      </div>
+    </div>
+
+    <footer>
+      Part of your <a href="README.md">ai-learning</a> folder · Progress saved in your browser
+      <button class="reset-btn" id="resetBtn">Reset quest</button>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="learn-overlay" id="learnOverlay">
+    <div class="learn-panel" id="learnPanel">
+      <div class="learn-panel-header">
+        <div>
+          <h3 id="learnTitle">Why?</h3>
+          <div class="step-id" id="learnStepId"></div>
+        </div>
+        <button class="learn-close" id="learnClose" aria-label="Close">×</button>
+      </div>
+      <div class="learn-panel-body" id="learnBody"></div>
+    </div>
+  </div>
+
+  <script src="tasks-data.js"></script>
+  <script src="learn-content.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
