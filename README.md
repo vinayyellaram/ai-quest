@@ -56,6 +56,20 @@ See **`LEARNING-SCIENCE.md`** for the research behind the design.
 
 **Learn content:** Click 📖 on any step for "Why?" explanations. Edit built-in content in `learn-content.js` — see `HOW-TO-ADD-LEARN-CONTENT.md`.
 
+## Go live + Notion
+
+| Step | Action |
+|------|--------|
+| 1 | Create repo [github.com/new](https://github.com/new) → `ai-quest` |
+| 2 | `git remote add origin git@github.com:vinayyellaram/ai-quest.git && ./deploy.sh` |
+| 3 | Settings → Pages → **GitHub Actions** |
+| 4 | Create Notion HQ → paste URL in `integrations.config.js` |
+| 5 | (Optional) Notion API sync → `NOTION-SETUP.md` |
+
+**Live:** `https://vinayyellaram.github.io/ai-quest/`
+
+Full guides: **`NOTION-SETUP.md`** · **`DEPLOY.md`**
+
 ## Start today
 
 1. Open `index.html` or read `ROADMAP.md` end to end (30 min)

@@ -221,3 +221,31 @@ function hasLearnContent(stepId, questId, role) {
   const roleKey = role ? `${role}::${stepId}` : null;
   return !!(stepLearn[roleKey] || stepLearn[stepId] || questLearn[questId]);
 }
+
+/** Called from app.js after notion-content.json loads */
+function mergeNotionContent(notionData) {
+  if (!notionData) return;
+  window._notionContent = notionData;
+}
+
+function getLearnContentMerged(stepId, questId, role) {
+  const base = getLearnContent(stepId, questId, role);
+  const notion = window._notionContent;
+  if (!notion) return base;
+
+  const nStep = notion.steps?.[stepId];
+  const nQuest = !nStep && questId ? notion.quests?.[questId] : null;
+  const overlay = nStep || nQuest;
+  if (!overlay) return base;
+
+  return {
+    ...base,
+    ...overlay,
+    title: overlay.title || base.title,
+    why: overlay.why || base.why,
+    analogy: overlay.analogy || base.analogy,
+    how: overlay.how || base.how,
+    intro: overlay.intro || base.intro,
+    links: [...(base.links || []), ...(overlay.links || [])],
+  };
+}

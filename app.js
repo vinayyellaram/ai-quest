@@ -157,13 +157,25 @@ function showToast(msg) {
 }
 
 function openLearnPanel(stepId, questId) {
-  const content = getLearnContent(stepId, questId, state.role);
+  const content = getLearnContentMerged(stepId, questId, state.role);
   const noteKey = taskKey(stepId);
+  const notionPage = INTEGRATIONS.notionStepPages?.[stepId];
 
   document.getElementById('learnTitle').textContent = content.title || 'Learn';
   document.getElementById('learnStepId').textContent = stepId;
 
   let html = '';
+
+  if (notionPage || (INTEGRATIONS.notion?.enabled && INTEGRATIONS.notion.hubUrl)) {
+    html += `<div class="learn-block"><h4>📓 Notion</h4><ul class="learn-links">`;
+    if (notionPage) {
+      html += `<li><a href="${notionPage}" target="_blank" rel="noopener">Open step notes in Notion ↗</a></li>`;
+    }
+    if (INTEGRATIONS.notion?.hubUrl) {
+      html += `<li><a href="${INTEGRATIONS.notion.hubUrl}" target="_blank" rel="noopener">Learning HQ (Notion) ↗</a></li>`;
+    }
+    html += `</ul></div>`;
+  }
 
   if (content.intro) {
     html += `<div class="learn-block"><h4>📋 Quest overview</h4><p>${content.intro}</p></div>`;
@@ -192,8 +204,8 @@ function openLearnPanel(stepId, questId) {
       <p class="learn-notes-hint">Saved automatically in your browser. Also copy to <code>notes/</code> for backup.</p>
     </div>
     <div class="learn-block">
-      <h4>✏️ Edit built-in content</h4>
-      <p>Open <code>learn-content.js</code> and search for <code>${stepId}</code>. See <code>HOW-TO-ADD-LEARN-CONTENT.md</code>.</p>
+      <h4>✏️ Edit content</h4>
+      <p>Built-in: <code>learn-content.js</code> · Notion sync: <code>NOTION-SETUP.md</code> · Step id: <code>${stepId}</code></p>
     </div>
   `;
 
@@ -211,6 +223,39 @@ function openLearnPanel(stepId, questId) {
 
 function closeLearnPanel() {
   document.getElementById('learnOverlay').classList.remove('open');
+}
+
+async function loadNotionContent() {
+  try {
+    const res = await fetch('data/notion-content.json');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && data.steps) mergeNotionContent(data);
+    const badge = document.getElementById('notionSyncBadge');
+    if (badge && data.syncedAt) {
+      badge.textContent = `Notion synced ${new Date(data.syncedAt).toLocaleDateString()}`;
+    }
+  } catch (_) {}
+}
+
+function renderIntegrations() {
+  const bar = document.getElementById('integrationsBar');
+  if (!bar || typeof INTEGRATIONS === 'undefined') return;
+
+  let html = '<label>Connected:</label>';
+
+  if (INTEGRATIONS.notion?.enabled && INTEGRATIONS.notion.hubUrl) {
+    html += `<a class="int-btn" href="${INTEGRATIONS.notion.hubUrl}" target="_blank" rel="noopener">${INTEGRATIONS.notion.icon || '📓'} ${INTEGRATIONS.notion.label || 'Notion'}</a>`;
+  }
+  if (INTEGRATIONS.github?.enabled && INTEGRATIONS.github.repoUrl) {
+    html += `<a class="int-btn" href="${INTEGRATIONS.github.repoUrl}" target="_blank" rel="noopener">${INTEGRATIONS.github.icon || '🐙'} ${INTEGRATIONS.github.label || 'GitHub'}</a>`;
+  }
+  if (INTEGRATIONS.calendar?.enabled && INTEGRATIONS.calendar.googleTemplateUrl) {
+    html += `<a class="int-btn" href="${INTEGRATIONS.calendar.googleTemplateUrl}" target="_blank" rel="noopener">${INTEGRATIONS.calendar.icon || '📅'} ${INTEGRATIONS.calendar.label || 'Calendar'}</a>`;
+  }
+
+  html += `<span class="notion-sync-badge" id="notionSyncBadge"></span>`;
+  bar.innerHTML = html;
 }
 
 function updateStreak() {
@@ -616,9 +661,12 @@ document.addEventListener('keydown', (e) => {
 
 /* Init */
 document.getElementById('quote').style.transition = 'opacity 0.3s';
-applyRoleUI();
-renderQuestMap();
-renderToday();
-renderSkills();
-renderQuiz();
-updateHUD();
+renderIntegrations();
+loadNotionContent().then(() => {
+  applyRoleUI();
+  renderQuestMap();
+  renderToday();
+  renderSkills();
+  renderQuiz();
+  updateHUD();
+});

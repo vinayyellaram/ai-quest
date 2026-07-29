@@ -1,16 +1,10 @@
-# Deploy AI Quest — Go Live
-
-Your app is **100% static** (HTML + JS). No server needed. Progress saves in each visitor's browser (localStorage).
-
----
-
-## Option 1: GitHub Pages (recommended — free)
+# Deploy AI Quest to GitHub Pages + Notion
 
 **Live URL:** `https://vinayyellaram.github.io/ai-quest/`
 
-Already configured in `.github/workflows/pages.yml`.
+See **`NOTION-SETUP.md`** for Notion connection (links + API sync).
 
-### One-time setup (if not done)
+## Quick deploy
 
 ```bash
 cd ai-learning
