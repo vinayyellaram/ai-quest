@@ -16,13 +16,14 @@ gh repo create ai-quest --public --source=. --push
 
 ### Enable Pages in GitHub (required)
 
-If deploy fails with **Get Pages site failed**, do this first:
-
 1. Open **https://github.com/vinayyellaram/ai-quest/settings/pages**
-2. **Build and deployment** → **Source** → **GitHub Actions**
-3. Go to **Actions** → re-run **Deploy AI Quest to GitHub Pages**
+2. **Build and deployment** → **Source** → **Deploy from a branch**
+3. **Branch:** `gh-pages` → **`/ (root)`** → **Save**
+4. **Actions** → re-run **Deploy AI Quest to GitHub Pages**
 
-Wait ~1 min, then open **https://vinayyellaram.github.io/ai-quest/**
+> Do NOT use "GitHub Actions" as source — use **gh-pages branch** (see `PAGES-FIX.md`).
+
+**Live URL:** **https://vinayyellaram.github.io/ai-quest/**
 
 ### Update live site
 
