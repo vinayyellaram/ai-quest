@@ -54,6 +54,19 @@ Open **`index.html`** in your browser for a gamified quest map with:
 
 See **`LEARNING-SCIENCE.md`** for the research behind the design.
 
+### macOS app
+
+Run as a native Mac app with progress saved to your machine:
+
+```bash
+cd mac-app
+npm install
+npm start
+```
+
+Data file: `~/Library/Application Support/AI Quest/progress.json`  
+Build a `.dmg`: `npm run build` — see `mac-app/README.md`.
+
 **Learn content:** Click 📖 on any step for "Why?" explanations. Edit built-in content in `learn-content.js` — see `HOW-TO-ADD-LEARN-CONTENT.md`.
 
 ## Go live + Notion

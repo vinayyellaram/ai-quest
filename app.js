@@ -21,11 +21,11 @@ const ROLE_META = {
 const FOCUS_LABELS = { core: '★ Core path', bonus: '★ Bonus', light: 'Lighter focus' };
 
 const skills = [
-  { id: 'python', name: 'Python', color: '#00f5d4' },
-  { id: 'ml', name: 'Machine Learning', color: '#7b61ff' },
-  { id: 'dl', name: 'Deep Learning', color: '#ff6bcb' },
-  { id: 'llm', name: 'LLMs & RAG', color: '#ffd166' },
-  { id: 'deploy', name: 'Deploy & Ops', color: '#06d6a0' },
+  { id: 'python', name: 'Python', color: '#39ff14' },
+  { id: 'ml', name: 'Machine Learning', color: '#00d4ff' },
+  { id: 'dl', name: 'Deep Learning', color: '#ff2d95' },
+  { id: 'llm', name: 'LLMs & RAG', color: '#ffd700' },
+  { id: 'deploy', name: 'Deploy & Ops', color: '#ff6b35' },
 ];
 
 const quotes = [
@@ -57,41 +57,61 @@ const quizzes = [
   { id: 'q4', q: 'Best way to learn (according to research)?', opts: ['Re-read notes 5 times', 'Active recall + practice', 'Highlight everything', 'Watch at 2× speed only'], ans: 1, explain: 'Testing yourself beats passive review. That\'s why we use micro-steps + quizzes.' },
 ];
 
-let state = loadState();
+let state = {
+  completedTasks: {},
+  role: 'ai-app',
+  skills: Object.fromEntries(skills.map(s => [s.id, 0])),
+  quizDone: [],
+  stepNotes: {},
+  openPhase: 'p1',
+  openQuest: null,
+  streak: 0,
+  lastActiveDate: null,
+};
 let quizIndex = 0;
 let quizAnswered = false;
 let pomoInterval = null;
 let pomoSeconds = 25 * 60;
 
-function loadState() {
+async function loadState() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
-    // Migrate v1
-    const old = localStorage.getItem('ai-quest-progress-v1');
+    const saved = await QuestStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const skillVals = Object.values(parsed.skills || {});
+      const nothingDone = !Object.values(parsed.completedTasks || {}).some(Boolean);
+      if (nothingDone && skillVals.length > 0 && skillVals.every(v => v === 10)) {
+        parsed.skills = Object.fromEntries(skills.map(s => [s.id, 0]));
+        await QuestStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+      }
+      return parsed;
+    }
+    const old = await QuestStorage.getItem('ai-quest-progress-v1');
     if (old) {
       const parsed = JSON.parse(old);
       parsed._fromV1 = true;
+      parsed.skills = Object.fromEntries(skills.map(s => [s.id, 0]));
       return parsed;
     }
   } catch (_) {}
-      return {
-        completedTasks: {},
-        role: 'ai-app',
-        skills: Object.fromEntries(skills.map(s => [s.id, 10])),
-        quizDone: [],
-        stepNotes: {},
-        openPhase: 'p1',
-        openQuest: null,
-        streak: 0,
-        lastActiveDate: null,
-      };
+  return {
+    completedTasks: {},
+    role: 'ai-app',
+    skills: Object.fromEntries(skills.map(s => [s.id, 0])),
+    quizDone: [],
+    stepNotes: {},
+    openPhase: 'p1',
+    openQuest: null,
+    streak: 0,
+    lastActiveDate: null,
+  };
 }
 
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  updateHUD();
-  updateSyncStatus();
+  QuestStorage.setItem(STORAGE_KEY, JSON.stringify(state)).then(() => {
+    updateHUD();
+    updateSyncStatus();
+  });
 }
 
 function getExportPayload() {
@@ -120,14 +140,14 @@ function exportProgress() {
 
 function importProgress(file) {
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     try {
       const data = JSON.parse(e.target.result);
       const imported = data.state || data;
       if (!imported.completedTasks && !imported.role) {
         throw new Error('Invalid backup file');
       }
-      state = { ...loadState(), ...imported };
+      state = { ...(await loadState()), ...imported };
       saveState();
       applyRoleUI();
       renderQuestMap();
@@ -148,10 +168,13 @@ function updateSyncStatus() {
   if (!el) return;
   const done = Object.keys(state.completedTasks || {}).filter(k => state.completedTasks[k]).length;
   const xp = getTotalXP();
+  const desktopNote = el.dataset.dataPath
+    ? ` · Saved on Mac: ${el.dataset.dataPath}`
+    : '';
   if (state.lastExportAt) {
-    el.textContent = `Last backup: ${new Date(state.lastExportAt).toLocaleString()} · ${done} steps done · ${xp} XP`;
+    el.textContent = `Last backup: ${new Date(state.lastExportAt).toLocaleString()} · ${done} steps done · ${xp} XP${desktopNote}`;
   } else {
-    el.textContent = `${done} steps done · ${xp} XP — export after each session to keep a backup`;
+    el.textContent = `${done} steps done · ${xp} XP — export after each session to keep a backup${desktopNote}`;
   }
 }
 
@@ -534,7 +557,7 @@ function autoBoostSkill(stepId) {
   const map = { p1: 'python', p2: 'ml', p3: 'llm', p4: 'deploy' };
   const prefix = stepId.slice(0, 2);
   const skillId = map[prefix] || 'python';
-  state.skills[skillId] = Math.min(100, (state.skills[skillId] || 10) + 2);
+  state.skills[skillId] = Math.min(100, (state.skills[skillId] || 0) + 2);
 }
 
 function checkPhaseComplete() {
@@ -555,7 +578,7 @@ function checkPhaseComplete() {
 function renderSkills() {
   const el = document.getElementById('skillBars');
   el.innerHTML = skills.map(s => {
-    const val = state.skills[s.id] || 10;
+    const val = state.skills[s.id] ?? 0;
     return `
       <div class="skill-row" data-skill="${s.id}">
         <div class="skill-label"><span>${s.name}</span><span>${val}%</span></div>
@@ -638,7 +661,7 @@ window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
 function burstConfetti(count = 50) {
-  const colors = ['#00f5d4', '#7b61ff', '#ff6bcb', '#ffd166', '#06d6a0'];
+  const colors = ['#39ff14', '#00d4ff', '#ff2d95', '#ffd700', '#ff6b35'];
   for (let i = 0; i < count; i++) {
     particles.push({
       x: canvas.width / 2 + (Math.random() - 0.5) * 200,
@@ -689,11 +712,11 @@ document.getElementById('rollQuote').addEventListener('click', () => {
     '💡 ' + SCIENCE_TIPS[Math.floor(Math.random() * SCIENCE_TIPS.length)];
 });
 
-document.getElementById('resetBtn').addEventListener('click', () => {
+document.getElementById('resetBtn').addEventListener('click', async () => {
   if (confirm('Reset all quest progress? Export a backup first if you want to keep it.')) {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem('ai-quest-progress-v1');
-    state = loadState();
+    await QuestStorage.removeItem(STORAGE_KEY);
+    await QuestStorage.removeItem('ai-quest-progress-v1');
+    state = await loadState();
     applyRoleUI();
     renderQuestMap();
     renderToday();
@@ -732,9 +755,24 @@ document.addEventListener('keydown', (e) => {
 });
 
 /* Init */
-document.getElementById('quote').style.transition = 'opacity 0.3s';
-renderIntegrations();
-loadNotionContent().then(() => {
+async function boot() {
+  state = await loadState();
+  document.getElementById('quote').style.transition = 'opacity 0.3s';
+
+  const syncTitle = document.getElementById('syncTitle');
+  const syncDesc = document.getElementById('syncDesc');
+  if (QuestStorage.isDesktop()) {
+    const dataPath = await QuestStorage.getDataPath();
+    const syncStatus = document.getElementById('syncStatus');
+    if (syncStatus && dataPath) syncStatus.dataset.dataPath = dataPath;
+    if (syncTitle) syncTitle.textContent = '💾 Save progress (stored on your Mac)';
+    if (syncDesc) {
+      syncDesc.innerHTML = 'Progress auto-saves to <code>~/Library/Application Support/AI Quest/progress.json</code>. <strong>Export a backup</strong> for iCloud or another device.';
+    }
+  }
+
+  renderIntegrations();
+  await loadNotionContent();
   applyRoleUI();
   renderQuestMap();
   renderToday();
@@ -742,4 +780,6 @@ loadNotionContent().then(() => {
   renderQuiz();
   updateHUD();
   updateSyncStatus();
-});
+}
+
+boot();

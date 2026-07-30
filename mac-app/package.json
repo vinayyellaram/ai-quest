@@ -1,0 +1,50 @@
+{
+  "name": "ai-quest-mac",
+  "version": "1.0.0",
+  "description": "AI Quest — 8-bit learning adventure for macOS",
+  "main": "main.js",
+  "author": "Vinay Yellaram",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --mac",
+    "pack": "electron-builder --mac dir"
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.aiquest.app",
+    "productName": "AI Quest",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js"
+    ],
+    "extraResources": [
+      {
+        "from": "..",
+        "to": "app",
+        "filter": [
+          "index.html",
+          "app.js",
+          "storage.js",
+          "tasks-data.js",
+          "learn-content.js",
+          "integrations.config.js",
+          "data/**/*"
+        ]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.education",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    }
+  }
+}
