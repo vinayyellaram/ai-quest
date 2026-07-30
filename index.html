@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI QUEST — 8-BIT LEARNING ADVENTURE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0d0221;
+      --surface: #1a0a2e;
+      --surface2: #2d1b4e;
+      --border: #5c4d7d;
+      --border-dark: #3d2a5c;
+      --border-light: #9d8ec7;
+      --text: #f0e6ff;
+      --muted: #9d8ec7;
+      --accent: #39ff14;
+      --accent2: #ff2d95;
+      --accent3: #ff6b35;
+      --gold: #ffd700;
+      --success: #39ff14;
+      --phase1: #39ff14;
+      --phase2: #00d4ff;
+      --phase3: #ff2d95;
+      --phase4: #ffd700;
+      --pixel-shadow: 4px 4px 0 #000;
+      --pixel-inset: inset -3px -3px 0 rgba(0,0,0,0.5), inset 3px 3px 0 rgba(255,255,255,0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'VT323', monospace;
+      font-size: 1.35rem;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      image-rendering: pixelated;
+    }
+
+    /* Retro starfield + grid */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(1px 1px at 20% 30%, #fff 50%, transparent 50%),
+        radial-gradient(1px 1px at 60% 70%, #fff 50%, transparent 50%),
+        radial-gradient(1px 1px at 80% 10%, #fff 50%, transparent 50%),
+        radial-gradient(1px 1px at 40% 80%, #fff 50%, transparent 50%),
+        radial-gradient(1px 1px at 10% 60%, #fff 50%, transparent 50%),
+        radial-gradient(1px 1px at 90% 50%, #fff 50%, transparent 50%),
+        radial-gradient(1px 1px at 50% 20%, #fff 50%, transparent 50%),
+        radial-gradient(1px 1px at 70% 90%, #fff 50%, transparent 50%),
+        linear-gradient(rgba(57, 255, 20, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(57, 255, 20, 0.04) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 16px 16px, 16px 16px;
+      pointer-events: none;
+      z-index: 0;
+      animation: twinkle 4s step-end infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.12) 2px,
+        rgba(0, 0, 0, 0.12) 4px
+      );
+    }
+
+    .crt-vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9997;
+      box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.6);
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    /* Header / HUD */
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--surface2);
+      border: 3px solid var(--border-light);
+      display: grid;
+      place-items: center;
+      font-size: 1.75rem;
+      box-shadow: var(--pixel-shadow);
+      animation: blink-icon 1.2s step-end infinite;
+    }
+
+    @keyframes blink-icon {
+      0%, 49% { border-color: var(--accent); }
+      50%, 100% { border-color: var(--border-light); }
+    }
+
+    .logo h1 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1.15rem;
+      font-weight: 400;
+      color: var(--gold);
+      text-shadow: 2px 2px 0 #000, 0 0 8px var(--accent);
+      line-height: 1.6;
+    }
+
+    .logo p { font-size: 1.15rem; color: var(--muted); letter-spacing: 0.05em; }
+
+    .hud {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .hud-stat {
+      background: var(--surface);
+      border: 3px solid var(--border-dark);
+      box-shadow: var(--pixel-shadow);
+      padding: 0.5rem 0.85rem;
+      min-width: 100px;
+    }
+
+    .hud-stat label {
+      display: block;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .hud-stat span {
+      font-family: 'VT323', monospace;
+      font-size: 1.75rem;
+      font-weight: 400;
+      color: var(--accent);
+    }
+
+    .xp-bar-wrap {
+      flex: 1;
+      min-width: 180px;
+      background: var(--surface);
+      border: 3px solid var(--border-dark);
+      box-shadow: var(--pixel-shadow);
+      padding: 0.5rem 0.85rem;
+    }
+
+    .xp-bar-wrap label {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+
+    .xp-bar {
+      height: 14px;
+      background: #000;
+      border: 2px solid var(--border-dark);
+      margin-top: 0.4rem;
+      overflow: hidden;
+      image-rendering: pixelated;
+    }
+
+    .xp-fill {
+      height: 100%;
+      width: 0%;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--accent) 0px,
+        var(--accent) 8px,
+        #00b82a 8px,
+        #00b82a 16px
+      );
+      transition: width 0.4s steps(10);
+      box-shadow: inset 0 -3px 0 rgba(0,0,0,0.3);
+    }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 2rem 0 2.5rem;
+    }
+
+    .hero h2 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(0.85rem, 3.5vw, 1.2rem);
+      font-weight: 400;
+      line-height: 2;
+      margin-bottom: 1rem;
+      color: var(--text);
+      text-shadow: 2px 2px 0 #000;
+    }
+
+    .hero h2 em {
+      font-style: normal;
+      color: var(--accent2);
+    }
+
+    .hero p {
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0 auto 1.5rem;
+      font-size: 1.4rem;
+      line-height: 1.5;
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .tag {
+      font-family: 'VT323', monospace;
+      font-size: 1.25rem;
+      padding: 0.25rem 0.6rem;
+      background: var(--surface2);
+      border: 2px solid var(--border-dark);
+      color: var(--muted);
+      transition: all 0.1s;
+      box-shadow: 2px 2px 0 #000;
+    }
+
+    .tag:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0 #000;
+    }
+
+    /* Role picker */
+    .section-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      font-weight: 400;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--accent2);
+      text-shadow: 2px 2px 0 #000;
+    }
+
+    .role-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .role-card {
+      background: var(--surface);
+      border: 3px solid var(--border-dark);
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: all 0.1s;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--pixel-shadow);
+    }
+
+    .role-card::before { display: none; }
+
+    .role-card:hover {
+      border-color: var(--accent2);
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 #000;
+    }
+
+    .role-card.selected {
+      border-color: var(--accent);
+      background: #1a2e1a;
+      box-shadow: var(--pixel-shadow), 0 0 0 2px var(--accent);
+    }
+
+    .role-card.selected::after {
+      content: '▶ SELECTED';
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      color: var(--accent);
+      background: #000;
+      padding: 0.25rem 0.4rem;
+      border: 2px solid var(--accent);
+    }
+
+    .role-emoji { font-size: 2rem; margin-bottom: 0.5rem; }
+    .role-card h3 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+      color: var(--accent2);
+    }
+    .role-card p { font-size: 1.15rem; color: var(--muted); line-height: 1.4; }
+
+    .role-path-banner {
+      background: var(--surface);
+      border: 3px solid var(--accent);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      animation: fadeIn 0.35s steps(4);
+      box-shadow: var(--pixel-shadow);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .role-path-banner .path-emoji { font-size: 1.75rem; }
+    .role-path-banner strong { color: var(--accent); }
+    .role-path-banner p { font-size: 1.05rem; color: var(--muted); line-height: 1.45; }
+
+    .phase-focus {
+      display: inline-block;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      padding: 0.2rem 0.4rem;
+      border: 2px solid currentColor;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .phase-focus.core { background: #0a2e0a; color: var(--accent); }
+    .phase-focus.bonus { background: #2e2a0a; color: var(--gold); }
+    .phase-focus.light { background: var(--surface2); color: var(--muted); }
+
+    .quest-map-wrap.updating { opacity: 0.5; pointer-events: none; transition: opacity 0.2s; }
+    .quest-map {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .phase-card {
+      background: var(--surface);
+      border: 3px solid var(--border-dark);
+      overflow: hidden;
+      transition: border-color 0.1s;
+      box-shadow: var(--pixel-shadow);
+    }
+
+    .phase-card.unlocked { border-color: var(--border-dark); }
+    .phase-card.active { border-color: var(--phase-color, var(--accent)); }
+    .phase-card.completed { border-color: var(--success); }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.25rem 1.5rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .phase-badge {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      font-size: 1.75rem;
+      flex-shrink: 0;
+      background: #000;
+      border: 3px solid var(--phase-color, var(--border));
+      box-shadow: 2px 2px 0 #000;
+      transition: transform 0.1s;
+    }
+
+    .phase-card.open .phase-badge { transform: translate(-1px, -1px); }
+
+    .phase-info { flex: 1; min-width: 0; }
+    .phase-info h3 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      margin-bottom: 0.35rem;
+      color: var(--gold);
+    }
+    .phase-info .meta { font-size: 1.15rem; color: var(--muted); }
+
+    .phase-progress-ring {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .phase-progress-ring circle {
+      fill: none;
+      stroke-width: 4;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+
+    .phase-progress-ring .bg { stroke: var(--surface2); }
+    .phase-progress-ring .fg {
+      stroke: var(--phase-color, var(--accent));
+      stroke-linecap: butt;
+      stroke-dasharray: 113;
+      stroke-dashoffset: 113;
+      transition: stroke-dashoffset 0.4s steps(8);
+    }
+
+    .chevron {
+      font-size: 1.35rem;
+      color: var(--muted);
+      transition: transform 0.3s;
+    }
+
+    .phase-card.open .chevron { transform: rotate(180deg); }
+
+    .phase-body {
+      max-height: 0;
+      overflow: hidden;
+      pointer-events: none;
+      transition: max-height 0.4s ease;
+    }
+
+    .phase-card.open .phase-body {
+      max-height: 800px;
+      pointer-events: auto;
+    }
+
+    .phase-card.open {
+      position: relative;
+      z-index: 2;
+    }
+
+    .phase-content {
+      padding: 0 1.5rem 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .task-list { list-style: none; margin-top: 1rem; }
+
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid rgba(42, 53, 85, 0.5);
+      transition: background 0.2s;
+    }
+
+    .task-item:last-child { border-bottom: none; }
+
+    .task-item.done .task-text {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .task-check {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border-light);
+      cursor: pointer;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      font-size: 0.75rem;
+      transition: all 0.1s;
+      margin-top: 1px;
+      background: #000;
+    }
+
+    .task-item.done .task-check {
+      background: var(--success);
+      border-color: var(--success);
+      color: #000;
+    }
+
+    .task-check:hover { border-color: var(--accent); }
+
+    .task-text { font-size: 1.1rem; line-height: 1.45; flex: 1; }
+    .task-xp {
+      font-family: 'VT323', monospace;
+      font-size: 1.15rem;
+      color: var(--gold);
+      white-space: nowrap;
+    }
+
+    /* Mini quiz */
+    .quiz-box {
+      background: var(--surface);
+      border: 3px solid var(--border-dark);
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+      box-shadow: var(--pixel-shadow);
+    }
+
+    .quiz-question {
+      font-size: 1.35rem;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .quiz-options {
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .quiz-opt {
+      background: var(--surface2);
+      border: 3px solid var(--border-dark);
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      font-size: 1.25rem;
+      color: var(--text);
+      transition: all 0.1s;
+      box-shadow: 2px 2px 0 #000;
+    }
+
+    .quiz-opt:hover:not(:disabled) {
+      border-color: var(--accent2);
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0 #000;
+    }
+
+    .quiz-opt.correct { border-color: var(--success); background: #0a2e0a; color: var(--success); }
+    .quiz-opt.wrong { border-color: #ff0044; background: #2e0a14; color: #ff0044; }
+    .quiz-opt:disabled { cursor: default; }
+
+    .quiz-feedback {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border: 2px solid var(--border-dark);
+      font-size: 1.25rem;
+      display: none;
+    }
+
+    .quiz-feedback.show { display: block; }
+    .quiz-feedback.ok { background: #0a2e0a; border-color: var(--success); color: var(--success); }
+    .quiz-feedback.no { background: #2e0a14; border-color: #ff0044; color: #ff0044; }
+
+    .quiz-next {
+      margin-top: 1rem;
+      background: var(--accent);
+      border: 3px solid #000;
+      color: #000;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      display: none;
+      box-shadow: var(--pixel-shadow);
+    }
+
+    .quiz-next.show { display: inline-block; }
+    .quiz-next:hover { background: var(--gold); transform: translate(-1px, -1px); }
+
+    /* Skill wheel */
+    .skills-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    @media (max-width: 700px) {
+      .skills-section { grid-template-columns: 1fr; }
+    }
+
+    .skill-panel {
+      background: var(--surface);
+      border: 3px solid var(--border-dark);
+      padding: 1.5rem;
+      box-shadow: var(--pixel-shadow);
+    }
+
+    .skill-row {
+      margin-bottom: 1rem;
+    }
+
+    .skill-row:last-child { margin-bottom: 0; }
+
+    .skill-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.3rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .skill-label span:last-child {
+      font-family: 'VT323', monospace;
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+
+    .skill-track {
+      height: 14px;
+      background: #000;
+      border: 2px solid var(--border-dark);
+      overflow: hidden;
+      cursor: pointer;
+      image-rendering: pixelated;
+    }
+
+    .skill-fill {
+      height: 100%;
+      transition: width 0.4s steps(10);
+      box-shadow: inset 0 -3px 0 rgba(0,0,0,0.3);
+    }
+
+    .motivation {
+      text-align: center;
+      padding: 1.5rem;
+      background: var(--surface);
+      border: 3px solid var(--accent2);
+      margin-bottom: 2rem;
+      box-shadow: var(--pixel-shadow);
+    }
+
+    .motivation q {
+      font-size: 1.5rem;
+      font-style: normal;
+      color: var(--text);
+      display: block;
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .motivation cite { font-size: 1.15rem; color: var(--muted); font-style: normal; }
+
+    .btn-roll {
+      background: var(--surface2);
+      border: 3px solid var(--border-dark);
+      color: var(--gold);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      padding: 0.6rem 0.8rem;
+      cursor: pointer;
+      margin-top: 0.75rem;
+      transition: all 0.1s;
+      box-shadow: var(--pixel-shadow);
+    }
+
+    .btn-roll:hover {
+      border-color: var(--gold);
+      transform: translate(-1px, -1px);
+      box-shadow: 5px 5px 0 #000;
+    }
+
+    @keyframes blink-border {
+      0%, 49% { border-color: var(--accent); }
+      50%, 100% { border-color: var(--border-dark); }
+    }
+
+    /* Confetti canvas */
+    #confetti {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--surface);
+      border: 3px solid var(--accent);
+      color: var(--accent);
+      padding: 0.85rem 1.5rem;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      line-height: 1.8;
+      box-shadow: var(--pixel-shadow);
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s steps(4);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    .reset-btn {
+      background: var(--surface2);
+      border: 2px solid var(--border-dark);
+      color: var(--muted);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      padding: 0.5rem 0.6rem;
+      cursor: pointer;
+      margin-left: 0.5rem;
+      box-shadow: 2px 2px 0 #000;
+    }
+
+    .reset-btn:hover { color: #ff0044; border-color: #ff0044; }
+
+    /* Today + Pomodoro */
+    .learn-lab {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 750px) { .learn-lab { grid-template-columns: 1fr; } }
+
+    .lab-panel {
+      background: var(--surface);
+      border: 3px solid var(--border-dark);
+      padding: 1.25rem 1.5rem;
+      box-shadow: var(--pixel-shadow);
+    }
+
+    .today-list { list-style: none; margin-top: 0.75rem; }
+
+    .today-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(42, 53, 85, 0.4);
+      font-size: 1.15rem;
+      cursor: pointer;
+    }
+
+    .today-item:last-child { border-bottom: none; }
+    .today-item:hover { color: var(--accent); }
+    .today-item .mini-check {
+      width: 18px; height: 18px; border: 2px solid var(--border-light);
+      flex-shrink: 0; margin-top: 1px;
+      display: grid; place-items: center; font-size: 0.65rem;
+      background: #000;
+    }
+    .today-item.done { color: var(--muted); text-decoration: line-through; }
+    .today-item.done .mini-check { background: var(--success); border-color: var(--success); color: #000; }
+
+    .pomodoro-display {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1.75rem;
+      font-weight: 400;
+      text-align: center;
+      color: var(--accent);
+      margin: 0.5rem 0;
+      text-shadow: 2px 2px 0 #000;
+      letter-spacing: 0.1em;
+    }
+
+    .pomodoro-btns { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+
+    .pomo-btn {
+      background: var(--surface2);
+      border: 3px solid var(--border-dark);
+      color: var(--text);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      padding: 0.6rem 0.75rem;
+      cursor: pointer;
+      transition: all 0.1s;
+      box-shadow: 2px 2px 0 #000;
+    }
+
+    .pomo-btn:hover { border-color: var(--accent); color: var(--accent); transform: translate(-1px, -1px); }
+    .pomo-btn.primary { background: var(--accent); color: #000; border-color: #000; font-weight: 400; }
+    .pomo-btn.running { animation: blink-border 0.8s step-end infinite; }
+
+    .science-tip {
+      font-size: 1.05rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+      line-height: 1.4;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .hud-stat.streak span { color: var(--gold); }
+
+    /* Nested quests */
+    .quest-group {
+      border: 2px solid var(--border-dark);
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .quest-group:last-child { margin-bottom: 0; }
+
+    .quest-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .quest-header:hover { background: rgba(255,255,255,0.02); }
+
+    .quest-meta { flex: 1; min-width: 0; }
+    .quest-meta h4 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      margin-bottom: 0.25rem;
+      color: var(--gold);
+    }
+    .quest-meta .sub { font-size: 1.1rem; color: var(--muted); }
+
+    .method-badge {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55rem;
+      padding: 0.25rem 0.4rem;
+      border: 2px solid var(--accent2);
+      background: #1a0a2e;
+      color: var(--accent2);
+      white-space: nowrap;
+    }
+
+    .quest-progress {
+      font-family: 'VT323', monospace;
+      font-size: 1.25rem;
+      color: var(--muted);
+    }
+
+    .quest-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; pointer-events: none; }
+    .quest-group.open .quest-body { max-height: 600px; pointer-events: auto; }
+    .quest-group.open .quest-chevron { transform: rotate(180deg); }
+    .quest-chevron { font-size: 0.8rem; color: var(--muted); transition: transform 0.3s; }
+
+    .step-list { list-style: none; padding: 0 1rem 0.75rem; border-top: 1px solid var(--border); }
+    .step-item {
+      display: flex; align-items: flex-start; gap: 0.6rem;
+      padding: 0.5rem 0; font-size: 1.05rem; cursor: pointer;
+      border-bottom: 1px solid rgba(42, 53, 85, 0.3);
+    }
+    .step-item:last-child { border-bottom: none; }
+    .step-item.done .step-text { text-decoration: line-through; color: var(--muted); }
+    .step-item.done .step-text code { color: var(--muted); }
+    .step-check {
+      width: 18px; height: 18px; border: 2px solid var(--border-light);
+      flex-shrink: 0; display: grid; place-items: center; font-size: 0.65rem; margin-top: 2px;
+      background: #000;
+    }
+    .step-item.done .step-check { background: var(--success); border-color: var(--success); color: #000; }
+    .step-text { flex: 1; line-height: 1.4; font-size: 1.15rem; }
+    .step-text code { font-family: 'VT323', monospace; font-size: 1.15rem; color: var(--accent); background: #000; padding: 0.1rem 0.35rem; border: 1px solid var(--border-dark); }
+    .step-xp { font-family: 'VT323', monospace; font-size: 1.15rem; color: var(--gold); }
+
+    .phase-body { max-height: 0; overflow: hidden; pointer-events: none; transition: max-height 0.4s ease; }
+    .phase-card.open .phase-body { max-height: 5000px; pointer-events: auto; }
+
+    /* Learn panel */
+    .step-learn-btn {
+      background: #1a0a2e;
+      border: 2px solid var(--accent2);
+      color: var(--accent2);
+      width: 26px;
+      height: 26px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      transition: all 0.1s;
+      box-shadow: 2px 2px 0 #000;
+    }
+    .step-learn-btn:hover { background: var(--accent2); color: #000; }
+    .step-learn-btn.has-content { border-color: var(--accent); color: var(--accent); background: #0a2e0a; }
+
+    .learn-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .learn-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .learn-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(420px, 100vw);
+      height: 100vh;
+      background: var(--surface);
+      border-left: 4px solid var(--accent);
+      z-index: 2001;
+      transform: translateX(100%);
+      transition: transform 0.2s steps(6);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -8px 0 0 #000;
+    }
+    .learn-overlay.open .learn-panel { transform: translateX(0); }
+
+    .learn-panel-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .learn-panel-header h3 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      color: var(--gold);
+    }
+    .learn-panel-header .step-id {
+      font-family: 'VT323', monospace;
+      font-size: 1.15rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+    .learn-close {
+      background: var(--surface2);
+      border: 2px solid var(--border-dark);
+      color: var(--muted);
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 1.25rem;
+      box-shadow: 2px 2px 0 #000;
+    }
+    .learn-close:hover { color: var(--text); border-color: var(--accent); }
+
+    .learn-panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .learn-block {
+      margin-bottom: 1.25rem;
+    }
+    .learn-block h4 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+    }
+    .learn-block p, .learn-block div {
+      font-size: 1.25rem;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .learn-block code {
+      font-family: 'VT323', monospace;
+      font-size: 1.15rem;
+      color: var(--accent);
+      background: #000;
+      padding: 0.1rem 0.35rem;
+      border: 1px solid var(--border-dark);
+    }
+    .learn-links { list-style: none; }
+    .learn-links a {
+      color: var(--accent2);
+      font-size: 1.15rem;
+      text-decoration: none;
+      display: block;
+      padding: 0.35rem 0;
+    }
+    .learn-links a:hover { text-decoration: underline; }
+
+    .learn-notes textarea {
+      width: 100%;
+      min-height: 100px;
+      background: #000;
+      border: 2px solid var(--border-dark);
+      color: var(--text);
+      font-family: 'VT323', monospace;
+      font-size: 1.25rem;
+      padding: 0.75rem;
+      resize: vertical;
+      line-height: 1.45;
+    }
+    .learn-notes textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .learn-notes-hint { font-size: 0.95rem; color: var(--muted); margin-top: 0.35rem; }
+
+    .quest-about-btn {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55rem;
+      padding: 0.25rem 0.4rem;
+      background: #0a2e0a;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      cursor: pointer;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+    .quest-about-btn:hover { background: var(--accent); color: #000; }
+
+    .integrations-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--surface);
+      border: 3px solid var(--border-dark);
+      align-items: center;
+      box-shadow: var(--pixel-shadow);
+    }
+    .integrations-bar label {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-right: 0.25rem;
+    }
+    .int-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: 'VT323', monospace;
+      font-size: 1.25rem;
+      padding: 0.35rem 0.65rem;
+      background: var(--surface2);
+      border: 2px solid var(--border-dark);
+      color: var(--text);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.1s;
+      box-shadow: 2px 2px 0 #000;
+    }
+    .int-btn:hover { border-color: var(--accent); color: var(--accent); transform: translate(-1px, -1px); }
+    .notion-sync-badge {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .sync-panel {
+      background: var(--surface);
+      border: 3px solid var(--border-dark);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--pixel-shadow);
+    }
+    .sync-panel p { font-size: 1.1rem; color: var(--muted); line-height: 1.5; margin-bottom: 0.75rem; }
+    .sync-btns { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .sync-btn {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      padding: 0.6rem 0.85rem;
+      cursor: pointer;
+      border: 3px solid var(--border-dark);
+      background: var(--surface2);
+      color: var(--text);
+      transition: all 0.1s;
+      box-shadow: 2px 2px 0 #000;
+    }
+    .sync-btn:hover { border-color: var(--accent); color: var(--accent); transform: translate(-1px, -1px); }
+    .sync-btn.primary { background: var(--accent); color: #000; border-color: #000; }
+    .sync-status { font-size: 1rem; color: var(--muted); margin-top: 0.6rem; }
+    #importFile { display: none; }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="scanlines"></div>
+  <div class="crt-vignette"></div>
+  <canvas id="confetti"></canvas>
+
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon">🎮</div>
+        <div>
+          <h1>AI QUEST</h1>
+          <p>INSERT COIN TO LEARN</p>
+        </div>
+      </div>
+      <div class="hud">
+        <div class="hud-stat">
+          <label>Level</label>
+          <span id="level">1</span>
+        </div>
+        <div class="hud-stat">
+          <label>XP</label>
+          <span id="xp">0</span>
+        </div>
+        <div class="hud-stat streak">
+          <label>Streak</label>
+          <span id="streak">0🔥</span>
+        </div>
+        <div class="xp-bar-wrap">
+          <label>Progress to next level</label>
+          <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h2>PRESS START — <em>REACT</em> TO <em>RAG</em></h2>
+      <p>6-MONTH SIDE-SCROLLER. FULL-STACK WARRIOR → AI ENGINEER. CHECK QUESTS, EARN XP, UNLOCK WORLDS.</p>
+      <div class="hero-tags">
+        <span class="tag">Node.js ✓</span>
+        <span class="tag">React ✓</span>
+        <span class="tag">MySQL ✓</span>
+        <span class="tag">Python →</span>
+        <span class="tag">LLMs →</span>
+        <span class="tag">RAG →</span>
+      </div>
+    </section>
+
+    <section class="motivation">
+      <q id="quote">The best way to predict the future is to build it.</q>
+      <cite>— Tap for daily motivation</cite>
+      <br />
+      <button class="btn-roll" id="rollQuote">🎲 REROLL QUOTE</button>
+    </section>
+
+    <h2 class="section-title">🎯 Choose your class</h2>
+    <div class="role-cards" id="roleCards">
+      <div class="role-card selected" data-role="ai-app">
+        <div class="role-emoji">🚀</div>
+        <h3>AI App Engineer</h3>
+        <p>Build LLM features, RAG, agents. Best fit for your stack.</p>
+      </div>
+      <div class="role-card" data-role="ml-eng">
+        <div class="role-emoji">⚙️</div>
+        <h3>ML Engineer</h3>
+        <p>Train models, pipelines, MLOps. More math, strong long-term.</p>
+      </div>
+      <div class="role-card" data-role="fullstack-ai">
+        <div class="role-emoji">🛠️</div>
+        <h3>Full-Stack + AI</h3>
+        <p>Add AI to web apps. Easiest transition, huge demand.</p>
+      </div>
+    </div>
+
+    <div class="integrations-bar" id="integrationsBar">
+      <label>Connected:</label>
+    </div>
+
+    <div class="learn-lab">
+      <div class="lab-panel">
+        <h2 class="section-title">☀️ Today's focus (3 micro-steps)</h2>
+        <p style="font-size:1rem;color:var(--muted);margin-top:-0.5rem">Implementation intentions — science-backed daily targets</p>
+        <ul class="today-list" id="todayList"></ul>
+      </div>
+      <div class="lab-panel">
+        <h2 class="section-title">🍅 Focus timer</h2>
+        <p style="font-size:1rem;color:var(--muted);margin-top:-0.5rem">Pomodoro: 25 min deep work, 5 min break</p>
+        <div class="pomodoro-display" id="pomoTime">25:00</div>
+        <div class="pomodoro-btns">
+          <button class="pomo-btn primary" id="pomoStart">Start 25 min</button>
+          <button class="pomo-btn" id="pomoBreak">Break 5 min</button>
+          <button class="pomo-btn" id="pomoReset">Reset</button>
+        </div>
+        <p class="science-tip" id="scienceTip">💡 <strong>Micro-learning:</strong> 2–10 min steps beat vague goals. Small wins release dopamine and build momentum.</p>
+      </div>
+    </div>
+
+    <h2 class="section-title" id="questMapTitle">🗺️ Quest map — 4 phases</h2>
+    <div id="rolePathBanner" class="role-path-banner"></div>
+    <div class="quest-map-wrap" id="questMapWrap">
+      <div class="quest-map" id="questMap"></div>
+    </div>
+
+    <div class="skills-section">
+      <div class="skill-panel">
+        <h2 class="section-title">📊 Skill radar (click to set)</h2>
+        <div id="skillBars"></div>
+      </div>
+      <div class="quiz-box">
+        <h2 class="section-title">⚡ Quick quiz — +25 XP each</h2>
+        <p class="quiz-question" id="quizQ"></p>
+        <div class="quiz-options" id="quizOpts"></div>
+        <div class="quiz-feedback" id="quizFb"></div>
+        <button class="quiz-next" id="quizNext">Next question →</button>
+      </div>
+    </div>
+
+    <section class="sync-panel">
+      <h2 class="section-title" id="syncTitle">💾 Save progress (survives localStorage clear)</h2>
+      <p id="syncDesc">Progress lives in your browser only. <strong>Export a backup</strong> to Google Drive, iCloud, or email — then <strong>Import</strong> after clearing data or on a new device.</p>
+      <div class="sync-btns">
+        <button class="sync-btn primary" id="exportBtn">⬇ Export backup</button>
+        <button class="sync-btn" id="importBtn">⬆ Import backup</button>
+        <input type="file" id="importFile" accept=".json,application/json" />
+      </div>
+      <p class="sync-status" id="syncStatus">Last backup: none yet — export after each study session</p>
+    </section>
+
+    <footer>
+      Part of your <a href="https://github.com/vinayyellaram/ai-quest">ai-quest</a> repo
+      <button class="reset-btn" id="resetBtn">Reset quest</button>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="learn-overlay" id="learnOverlay">
+    <div class="learn-panel" id="learnPanel">
+      <div class="learn-panel-header">
+        <div>
+          <h3 id="learnTitle">Why?</h3>
+          <div class="step-id" id="learnStepId"></div>
+        </div>
+        <button class="learn-close" id="learnClose" aria-label="Close">×</button>
+      </div>
+      <div class="learn-panel-body" id="learnBody"></div>
+    </div>
+  </div>
+
+  <script src="storage.js"></script>
+  <script src="tasks-data.js"></script>
+  <script src="learn-content.js"></script>
+  <script src="integrations.config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
